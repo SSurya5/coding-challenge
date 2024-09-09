@@ -1,6 +1,14 @@
 {% layout "template.liquid" %}
 
 {% block content %}
+<div id="toast" class="toast align-items-center text-bg-primary border-0" role="alert" aria-live="assertive" aria-atomic="true">
+  <div class="d-flex  top-0 end-0">
+    <div class="toast-body" id="toast-msg">
+      Item Added to Cart!
+    </div>
+    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+  </div>
+</div>
     <!-- Product section-->
         <section class="py-5">
             <div class="container px-4 px-lg-5 my-5">
@@ -19,74 +27,54 @@
                         </div>
                         <p class="lead">{{product.description}}</p>
                         
-                        <div class="variant-container">
-                            <legend>Choose Your Size</legend>
-                            <div class="variants">
-                                {% for variant in product.variants %}
-                                    <div id={{variant.id}} class="variant-label">{{ variant.title }}</div>
-                                {% endfor %}
-                            </div>
-                        </div>
+                         <b><label style="margin-bottom:5%; margin-right:5%; margin-top:5%;">Select Ur Size</label></b>
+                        <select name="id" id="variant-select" class="product-form__input product-form__input--select">
+                        {% for variant in product.variants %}
+                            {% if variant.available %}
+                                <option value="{{ variant.id }}" id="variant-name">{{ variant.title }}</option>
+                                {% else %}
+                                <option disabled="disabled">{{ variant.title }}</option>
+                            {% endif %}
+                        {% endfor %}
+                        </select>
+                        <br>
                         <div class="d-flex">
-                            <input class="form-control text-center me-3" id="inputQuantity" type="num" value="1" style="max-width: 3rem" />
-                            <button class="btn btn-outline-dark flex-shrink-0 add-to-cart-button" type="button">
+                            <input class="form-control text-center me-3" id="quantity-input" type="number" value="1" style="max-width: 3rem" />
+                            <button class="btn btn-outline-dark flex-shrink-0 add-to-cart" onclick="addToCart({{ product.id }})">
                                 <i class="bi-cart-fill me-1"></i>
                                 Add to cart
                             </button>
-                        </div> 
+                        </div>
                     </div>
                 </div>
             </div>
+            
         </section>
-
-<style>
-.variant-container {
-  display: flex;
-  flex-direction: column;
-  align-items: end;
-  padding-top: 1em;
-}
-
-.variant-label {
-  text-align: end;
-  width: 100%;
-  margin-bottom: 1em;
-  font-weight: 600;
-  font-size: 0.85em;
-}
-
-.variants {
-  display: flex;
-  width: 100%;
-  flex-wrap: wrap;
-  gap: 5px;
-  align-items: end;
-  justify-content: end;
-}
-
-.variant-label {
-  width: 2.5em;
-  height: 2.5em;
-  padding: 5px;
-  border: 1px solid darker;
-  text-align: center;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.selected-size {
-  background-color: #4ade80;
-  color: white;
-}
-
-.variant-label:hover {
-  background-color: #bfbfbf;
-  color: white;
-  cursor: pointer;
-}
-</style>
 <script>
+function addToCart(productId){
+    const qty = document.getElementById('quantity-input').value;
 
+    const variantName = document.getElementById('variant-name').text;
+    const variantId = document.getElementById('variant-name').value;
+
+    var payload = {
+                id: productId,
+                quantity: qty,
+                Size: variantName,
+                variantId: variantId,
+            };
+
+fetch("/cart/add.js",
+{
+    method: "POST",
+    body: JSON.stringify( payload )
+})
+.then(function(res){ return res.json(); })
+.then(function(data){ if(data.success) {
+var toastDisplay = document.getElementById('toast')
+toast = new bootstrap.Toast(toastDisplay)
+toast.show()
+} })
+}
 </script>
 {% endblock %}
