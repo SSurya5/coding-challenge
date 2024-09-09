@@ -1,14 +1,7 @@
 {% layout "template.liquid" %}
 
 {% block content %}
-<div id="toast" class="toast align-items-center text-bg-primary border-0" role="alert" aria-live="assertive" aria-atomic="true">
-  <div class="d-flex  top-0 end-0">
-    <div class="toast-body" id="toast-msg">
-      Item Added to Cart!
-    </div>
-    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-  </div>
-</div>
+
     <!-- Product section-->
         <section class="py-5">
             <div class="container px-4 px-lg-5 my-5">
@@ -28,7 +21,7 @@
                         <p class="lead">{{product.description}}</p>
                         
                          <b><label style="margin-bottom:5%; margin-right:5%; margin-top:5%;">Select Ur Size</label></b>
-                        <select name="id" id="variant-select" class="product-form__input product-form__input--select">
+                        <select name="id" id="variant-select" class=" form-select product-form__input product-form__input--select">
                         {% for variant in product.variants %}
                             {% if variant.available %}
                                 <option value="{{ variant.id }}" id="variant-name">{{ variant.title }}</option>
@@ -48,20 +41,28 @@
                     </div>
                 </div>
             </div>
-            
+          
         </section>
+<div class="toast-container p-3 bottom-0 end-0 "  data-original-class="toast-container p-3" style="max-width:fit-content !important;">
+    <div id="toast" class="toast fade">
+      <div class="toast-body" style="background-color:#AFE1AF !important;">
+        Item Added to Cart!
+      </div>
+    </div>
+</div>
 <script>
 function addToCart(productId){
-    const qty = document.getElementById('quantity-input').value;
+    const qty = document.querySelector('#quantity-input').value;
+    const variant = document.querySelector('#variant-select option:checked');
+    
 
-    const variantName = document.getElementById('variant-name').text;
-    const variantId = document.getElementById('variant-name').value;
+    console.log(variant.text)
 
     var payload = {
                 id: productId,
                 quantity: qty,
-                Size: variantName,
-                variantId: variantId,
+                Size: variant.text,
+                variantId: variant.value,
             };
 
 fetch("/cart/add.js",
@@ -71,7 +72,7 @@ fetch("/cart/add.js",
 })
 .then(function(res){ return res.json(); })
 .then(function(data){ if(data.success) {
-var toastDisplay = document.getElementById('toast')
+var toastDisplay = document.querySelector('#toast')
 toast = new bootstrap.Toast(toastDisplay)
 toast.show()
 } })
