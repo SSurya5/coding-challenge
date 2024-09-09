@@ -1,27 +1,41 @@
 {% layout "template.liquid" %}
 
 {% block content %}
-
+<style>
+.c-stock-badge{
+    border-radius: 2em;font-size: 0.75em;padding: 0.75em 2em; color: white;font-weight: 600;
+}
+.c-instock{
+    background-color: #4ca64c;
+}
+.c-outofstock{
+    background-color: #4ca64c;
+}
+.c-quantity-input{
+    max-width: 3rem;
+}
+</style>
     <!-- Product section-->
         <section class="py-5">
             <div class="container px-4 px-lg-5 my-5">
                 <div class="row gx-4 gx-lg-5 align-items-center">
-                    <div class="col-md-6"><img class="card-img-top mb-5 mb-md-0" src="/images/shoes.png" alt="shoes-side"/ /></div>
+                    <div class="col-md-6"><img class="card-img-top mb-5 mb-md-0" src="{{product.variants[0].featured_image.src}}" alt="{{product.variants[0].featured_image.alt}}" /></div>
                     <div class="col-md-6">
                         <h1 class="display-5 fw-bolder">{{ product.title | capitalize }}</h1>
                         <p class="fw-bolder">{{ product.handle | capitalize }}</p>
                         <div class="fs-5 mb-5">
                             <span>${{ product.price }} </span>
                             {% if  product.available == true %}
-                                <span style="background-color: #4ca64c;border-radius: 2em;font-size: 0.75em;padding: 0.75em 2em; color: white;font-weight: 600;">AVAILABLE</span>
+                                <span class="c-stock-badge c-instock">AVAILABLE</span>
                             {% else %}
-                                <span style="background-color: #ff6666;border-radius: 2em;font-size: 0.75em;padding: 0.75em 2em; color: white;font-weight: 600;">OUT OF STOCK </span>
+                                <span class="c-stock-badge c-outofstock">OUT OF STOCK </span>
                             {% endif %}
                         </div>
                         <p class="lead">{{product.description}}</p>
                         
-                         <b><label style="margin-bottom:5%; margin-right:5%; margin-top:5%;">Select Your Size</label></b>
-                        <select name="id" id="variant-select" class=" form-select product-form__input product-form__input--select">
+                        <div class="form-group mb-3">
+                        <label for="variant-select">Select Size</label>
+                        <select id="variant-select" class="form-select">
                         {% for variant in product.variants %}
                             {% if variant.available %}
                                 <option value="{{ variant.id }}" id="variant-name">{{ variant.title }}</option>
@@ -30,52 +44,50 @@
                             {% endif %}
                         {% endfor %}
                         </select>
-                        <br>
+                        </div>
                         <div class="d-flex">
-                            <input class="form-control text-center me-3" id="quantity-input" type="number" value="1" style="max-width: 3rem" />
-                            <button class="btn btn-outline-dark flex-shrink-0 add-to-cart" onclick="addToCart({{ product.id }})">
+                                <input class="form-control text-center me-3 c-quantity-input" id="quantity-input" type="number" value="1" >
+                                <button class="btn btn-outline-dark flex-shrink-0 add-to-cart" onclick="addToCart({{ product.id }})">
                                 <i class="bi-cart-fill me-1"></i>
                                 Add to cart
                             </button>
                         </div>
+                    
                     </div>
                 </div>
             </div>
           
         </section>
-<div class="toast-container p-3 bottom-0 end-0 "  data-original-class="toast-container p-3" style="max-width:fit-content !important;">
+<div class="toast-container p-3 bottom-0 end-0">
     <div id="toast" class="toast fade">
-      <div class="toast-body" style="background-color:#AFE1AF !important;">
-        Item Added to Cart!
+      <div class="toast-body bg-success text-body-emphasis">
+        Item added to cart!
       </div>
     </div>
 </div>
 <script>
-function addToCart(productId){
-    const qty = document.querySelector('#quantity-input').value;
-    const variant = document.querySelector('#variant-select option:checked');
-    
+    function addToCart(productId){
+        const qty = document.querySelector('#quantity-input').value;
+        const variant = document.querySelector('#variant-select option:checked');
 
-    console.log(variant.text)
-
-    var payload = {
-                id: productId,
-                quantity: qty,
-                Size: variant.text,
-                variantId: variant.value,
-            };
-
-fetch("/cart/add.js",
-{
-    method: "POST",
-    body: JSON.stringify( payload )
-})
-.then(function(res){ return res.json(); })
-.then(function(data){ if(data.success) {
-var toastDisplay = document.querySelector('#toast')
-toast = new bootstrap.Toast(toastDisplay)
-toast.show()
-} })
-}
+        fetch("/cart/add.js",
+        {
+            method: "POST",
+            body: JSON.stringify( {
+                        id: productId,
+                        quantity: qty,
+                        size: variant.text,
+                        variantid: variant.value,
+                    } )
+        })
+        .then(function(res){ return res.json(); })
+        .then(function(data){ 
+            if(data.success) {
+                var toastDisplay = document.querySelector('#toast')
+                toast = new bootstrap.Toast(toastDisplay)
+                toast.show()
+        } 
+        });
+    }
 </script>
 {% endblock %}
